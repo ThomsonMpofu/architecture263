@@ -3,9 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserInvitationController;
 use App\Http\Controllers\UserActivationController;
+use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
+
+
+Route::get('/document',[DocumentController::class,'index'])->name('documents.index');
+Route::resource('documents', DocumentController::class);
+Route::get('/document/download/{id}',[DocumentController::class,'download'])->name('documents.download');
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -18,6 +25,7 @@ Route::post('/activate/{token}', [UserActivationController::class, 'store'])->na
 Route::get('/dashboard', function () {
     return view('dashboard.index');
 })->middleware('auth')->name('dashboard.index');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
