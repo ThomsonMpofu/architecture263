@@ -295,11 +295,12 @@
         <div class="p-4 p-md-4">
 
             {{-- Messages --}}
-            @if (session('status'))
+            {{-- Status handled by SweetAlert Toast now --}}
+            {{-- @if (session('status'))
                 <div class="alert alert-success py-2 mb-3">
                     {{ session('status') }}
                 </div>
-            @endif
+            @endif --}}
 
             @if ($errors->any())
                 <div class="alert alert-danger py-2 mb-3">
@@ -402,7 +403,29 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (session('status'))
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: @json(session('status'))
+            });
+        @endif
+    });
+
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.getElementById('togglePasswordIcon');
     const loginForm = document.getElementById('loginForm');

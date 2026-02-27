@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 
 class UserActivationController extends Controller
 {
@@ -22,7 +21,7 @@ class UserActivationController extends Controller
             ->where('email', $email)
             ->first();
 
-        if (!$invitation) {
+        if (! $invitation) {
             abort(404, 'Invalid or expired activation link.');
         }
 
@@ -45,7 +44,7 @@ class UserActivationController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$invitation) {
+        if (! $invitation) {
             return back()->withErrors(['email' => 'Invalid or expired activation link.']);
         }
 
@@ -71,11 +70,12 @@ class UserActivationController extends Controller
             // Log the user in? Or redirect to login?
             // "Login uses Username + Password (not email)"
             // So we redirect to login page with a success message.
-            return redirect()->route('login')->with('status', 'Account activated! Please login with your username and password.');
+            return redirect('http://127.0.0.1:8001/login?status='.urlencode('Account activated! Please login with your username and password.'));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['email' => 'Activation failed: ' . $e->getMessage()]);
+
+            return back()->withErrors(['email' => 'Activation failed: '.$e->getMessage()]);
         }
     }
 }
