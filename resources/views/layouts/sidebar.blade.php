@@ -291,11 +291,11 @@
                 </a>
                 <ul id="user-mgmt-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                     <li><a href="{{ route('users.invite.create') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Invite User</span></a></li>
-                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>Users</span></a></li>
-                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>Roles & Permissions</span></a></li>
+                    <li><a href="{{ route('users.index') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Users</span></a></li>
+                    <li><a href="{{ route('access-control.index') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Roles & Permissions</span></a></li>
                 </ul>
             </li>
-
+            
             <li class="nav-heading">Settings</li>
 
             {{-- Portal Settings --}}
