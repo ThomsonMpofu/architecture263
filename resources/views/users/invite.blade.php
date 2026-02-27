@@ -188,7 +188,7 @@
                                                         </a>
                                                     </li>
                                                 @endif
-                                                @if($user->status === 'Expired' || $user->is_suspended)
+                                                @if($user->status === 'Expired' || $user->status === 'Inactive' || $user->is_suspended)
                                                     <li>
                                                         <a class="dropdown-item reactivate-link-btn text-primary" href="#" data-id="{{ $user->id }}">
                                                             <i class="ri-mail-send-line me-2"></i> Reactivate Link
