@@ -30,6 +30,18 @@ class AdminUserSeeder extends Seeder
             'permissions.view',
             'permissions.create',
             'permissions.edit',
+            // New Sidebar Permissions
+            'professionals_registry.view',
+            'professionals.view',
+            'firms.view',
+            'registry_applications.view',
+            'certificates.view',
+            'communications.view',
+            'notifications.view',
+            'communication_templates.view',
+            'communication_logs.view',
+            'branding.view',
+            'access_control.view',
         ];
 
         $permissionModels = [];
