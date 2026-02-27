@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\AccessControlController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Http\Controllers\UserActivationController;
 use App\Http\Controllers\DocumentController;
+
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -36,6 +38,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -59,6 +62,12 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::get('/users/invite', [UserInvitationController::class, 'create'])->name('users.invite.create');
     Route::post('/users/invite', [UserInvitationController::class, 'store'])->name('users.invite');
     Route::post('/users/resend/{id}', [UserInvitationController::class, 'resend'])->name('users.resend');
+
+    // User Management Actions
+    Route::put('/users/{id}', [UserInvitationController::class, 'update'])->name('users.update');
+    Route::post('/users/{id}/toggle-suspend', [UserInvitationController::class, 'toggleSuspend'])->name('users.toggle-suspend');
+    Route::post('/users/{id}/expire-link', [UserInvitationController::class, 'expireLink'])->name('users.expire-link');
+    Route::post('/users/{id}/reactivate-link', [UserInvitationController::class, 'reactivateLink'])->name('users.reactivate-link');
 });
 
 // Route::post('login', [AuthenticatedSessionController::class, 'store']);
