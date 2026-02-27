@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Install PHP dependencies if vendor directory is missing
-if [ ! -d "vendor" ]; then
+# Install PHP dependencies if autoloader is missing
+if [ ! -f "vendor/autoload.php" ]; then
     composer install
 fi
 
-# Install Node dependencies if node_modules is missing
-if [ ! -d "node_modules" ]; then
+# Install Node dependencies if binaries are missing
+if [ ! -d "node_modules/.bin" ]; then
     npm install
     npm run build
 fi
