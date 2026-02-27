@@ -9,6 +9,8 @@ services:
         working_dir: /var/www
         volumes:
             - ./:/var/www
+            - vendor:/var/www/vendor
+            - node_modules:/var/www/node_modules
         networks:
             - laravel
         depends_on:
@@ -79,4 +81,8 @@ networks:
 
 volumes:
     dbdata:
+        driver: local
+    vendor:
+        driver: local
+    node_modules:
         driver: local
