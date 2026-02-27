@@ -251,6 +251,7 @@
             </li>
 
             {{-- Professionals Registry --}}
+            @canany(['professionals_registry.view', 'professionals.view', 'firms.view', 'registry_applications.view', 'certificates.view'])
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#prof-registry-nav" href="#">
                     <i class="ri-user-star-line"></i>
@@ -258,15 +259,27 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="prof-registry-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                    @can('professionals_registry.view')
                     <li><a href="{{ url('/professionals-registry') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Overview</span></a></li>
+                    @endcan
+                    @can('professionals.view')
                     <li><a href="{{ url('/professionals') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Registered Professionals</span></a></li>
+                    @endcan
+                    @can('firms.view')
                     <li><a href="{{ url('/firms') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Firms / Practices</span></a></li>
+                    @endcan
+                    @can('registry_applications.view')
                     <li><a href="{{ url('/registry-applications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Applications</span></a></li>
+                    @endcan
+                    @can('certificates.view')
                     <li><a href="{{ url('/certificates-licenses') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Certificates & Licenses</span></a></li>
+                    @endcan
                 </ul>
             </li>
+            @endcanany
 
             {{-- Communications & Notifications --}}
+            @canany(['communications.view', 'notifications.view', 'communication_templates.view', 'communication_logs.view'])
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#comm-nav" href="#">
                     <i class="ri-notification-3-line"></i>
@@ -274,15 +287,25 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="comm-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                    @can('communications.view')
                     <li><a href="{{ url('/communications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Communications</span></a></li>
+                    @endcan
+                    @can('notifications.view')
                     <li><a href="{{ url('/notifications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Notifications</span></a></li>
+                    @endcan
+                    @can('communication_templates.view')
                     <li><a href="{{ url('/communication-templates') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Templates</span></a></li>
+                    @endcan
+                    @can('communication_logs.view')
                     <li><a href="{{ url('/communication-logs') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Delivery Logs</span></a></li>
+                    @endcan
                 </ul>
             </li>
+            @endcanany
 
             {{-- User Management --}}
             {{-- Removed @can checks for DB Facade compatibility --}}
+            @canany(['users.invite', 'users.view', 'access_control.view'])
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#user-mgmt-nav" href="#">
                     <i class="ri-team-line"></i>
@@ -290,11 +313,18 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="user-mgmt-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                    @can('users.invite')
                     <li><a href="{{ route('users.invite.create') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Invite User</span></a></li>
+                    @endcan
+                    @can('users.view')
                     <li><a href="{{ route('users.index') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Users</span></a></li>
+                    @endcan
+                    @can('access_control.view')
                     <li><a href="{{ route('access-control.index') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Roles & Permissions</span></a></li>
+                    @endcan
                 </ul>
             </li>
+            @endcanany
             
             <li class="nav-heading">Settings</li>
 
@@ -308,7 +338,9 @@
                 <ul id="settings-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                     <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>My Profile</span></a></li>
                     <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>General Settings</span></a></li>
+                    @can('branding.view')
                     <li><a href="{{ url('/portal-settings/branding') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Branding & Appearance</span></a></li>
+                    @endcan
                 </ul>
             </li>
 
