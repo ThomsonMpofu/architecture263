@@ -19,29 +19,10 @@ class LoginRequest extends FormRequest
     /**
      * Normalize incoming fields in case old login form still posts "email" or "username".
      */
-    protected function prepareForValidation(): void
-    {
-        // If your form posts "username"
-        if ($this->filled('username') && ! $this->filled('login')) {
-            $this->merge(['login' => $this->input('username')]);
-        }
-
-        // Backwards compatibility: if old form posts "email"
-        if ($this->filled('email') && ! $this->filled('login')) {
-            $this->merge(['login' => $this->input('email')]);
-        }
-
-        // Always trim
-        if ($this->filled('login')) {
-            $this->merge(['login' => trim((string) $this->input('login'))]);
-        }
-    }
-
     public function rules(): array
     {
         return [
-            // New: no email validation since you don’t use emails
-            'login' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -55,28 +36,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $login = (string) $this->input('login');
-        $password = (string) $this->input('password');
-
-        // ✅ Change this if your DB login column is different
-        $loginColumn = 'username'; // e.g. 'ec_number' or 'user_number'
-
-        $credentials = [
-            $loginColumn => $login,
-            'password' => $password,
-        ];
-
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'login' => trans('auth.failed'),
+                'username' => trans('auth.failed'),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
     }
 
+    /**
+     * Ensure the login request is not rate limited.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -88,17 +63,18 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'login' => trans('auth.throttle', [
+            'username' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
         ]);
     }
 
+    /**
+     * Get the rate limiting throttle key for the request.
+     */
     public function throttleKey(): string
     {
-        return Str::transliterate(
-            Str::lower((string) $this->input('login')) . '|' . $this->ip()
-        );
+        return Str::transliterate(Str::lower($this->input('username')).'|'.$this->ip());
     }
 }
