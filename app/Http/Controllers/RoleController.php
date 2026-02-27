@@ -54,6 +54,8 @@ class RoleController extends Controller
 
         $permissionIds = $validated['permission_ids'] ?? [];
         if (count($permissionIds) > 0) {
+            // Ensure IDs are integers, as strings are treated as permission names
+            $permissionIds = array_map('intval', $permissionIds);
             $role->syncPermissions($permissionIds);
         }
 
@@ -102,7 +104,11 @@ class RoleController extends Controller
             'guard_name' => $guardName,
         ]);
 
-        $role->syncPermissions($validated['permission_ids'] ?? []);
+        $permissionIds = $validated['permission_ids'] ?? [];
+        if (count($permissionIds) > 0) {
+            $permissionIds = array_map('intval', $permissionIds);
+        }
+        $role->syncPermissions($permissionIds);
 
         return redirect()
             ->route('roles.edit', $role)
