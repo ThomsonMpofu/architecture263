@@ -1,0 +1,6 @@
+docker compose up -d --build
+
+docker compose exec -T app php artisan migrate --force
+
+docker compose exec -T app composer dump-autoload 
+docker compose exec -T app php artisan db:seed
