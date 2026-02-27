@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PlanApplicationController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -102,10 +103,15 @@ Route::post('/auth/logout', function (Request $request) {
 
     DB::table('personal_access_tokens')->where('id', (int) $tokenId)->delete();
 
-    return response()->noContent();
+    return response()->json(['message' => 'Logged out.']);
 });
 
 Route::post('/auth/login', function (Request $request) {
+    $throttleKey = 'login|'.$request->ip();
+    if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+        return response()->json(['message' => 'Too many login attempts. Please try again later.'], 429);
+    }
+
     $username = trim((string) $request->input('username', ''));
     $password = (string) $request->input('password', '');
     $deviceName = trim((string) $request->input('device_name', 'portal'));
@@ -120,18 +126,6 @@ Route::post('/auth/login', function (Request $request) {
         ], 422);
     }
 
-    if (mb_strlen($username) > 191 || mb_strlen($deviceName) > 255) {
-        return response()->json(['message' => 'Invalid request.'], 422);
-    }
-
-    $throttleKey = 'api-auth-login|'.$request->ip().'|'.mb_strtolower($username);
-
-    if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-        return response()->json([
-            'message' => 'Too many attempts. Try again later.',
-        ], 429);
-    }
-
     $user = DB::table('users')
         ->select(['id', 'name', 'username', 'email', 'password', 'email_verified_at', 'is_suspended'])
         ->where('username', $username)
@@ -139,7 +133,6 @@ Route::post('/auth/login', function (Request $request) {
 
     if (! $user || ! Hash::check($password, (string) $user->password)) {
         RateLimiter::hit($throttleKey, 60);
-
         return response()->json(['message' => 'Invalid credentials.'], 401);
     }
 
@@ -150,23 +143,15 @@ Route::post('/auth/login', function (Request $request) {
     }
 
     if ($user->email_verified_at === null) {
-        return response()->json(['message' => 'Account inactive.'], 403);
+        return response()->json(['message' => 'Email not verified.'], 403);
     }
-
-    $expiresAt = null;
-    $expirationMinutes = config('sanctum.expiration');
-    if (is_int($expirationMinutes) && $expirationMinutes > 0) {
-        $expiresAt = now()->addMinutes($expirationMinutes);
-    }
-
-    DB::table('personal_access_tokens')
-        ->where('tokenable_type', User::class)
-        ->where('tokenable_id', $user->id)
-        ->where('name', $deviceName)
-        ->delete();
 
     $plainTextToken = (string) config('sanctum.token_prefix', '').Str::random(40);
     $tokenHash = hash('sha256', $plainTextToken);
+    
+    // Check if token expiration is configured
+    $expiration = config('sanctum.expiration');
+    $expiresAt = $expiration ? now()->addMinutes($expiration) : null;
 
     $tokenId = DB::table('personal_access_tokens')->insertGetId([
         'tokenable_type' => User::class,
@@ -191,3 +176,5 @@ Route::post('/auth/login', function (Request $request) {
         ],
     ]);
 })->middleware('throttle:10,1');
+
+Route::middleware('auth:sanctum')->post('/plan-applications', [PlanApplicationController::class, 'store']);
