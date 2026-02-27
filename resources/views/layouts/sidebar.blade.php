@@ -24,9 +24,51 @@
         border-right: 1px solid var(--acz-border-light);
         padding: 20px;
         transition: all 0.3s;
-        z-index: 996;
+        z-index: 999; /* Ensure sidebar is on top of header for visibility */
         font-family: 'HP Simplified', sans-serif;
         overflow-y: auto;
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox */
+    }
+
+    /* Mobile Sidebar State (Hidden by default) */
+    @media (max-width: 1199px) {
+        .acz-sidebar {
+            left: -300px;
+        }
+    }
+
+    /* Toggled State:
+       - On Desktop: Hide sidebar
+       - On Mobile: Show sidebar
+    */
+    .toggle-sidebar .acz-sidebar {
+        left: -300px;
+    }
+
+    @media (max-width: 1199px) {
+        .toggle-sidebar .acz-sidebar {
+            left: 0;
+        }
+    }
+
+    /* Custom Scrollbar for Sidebar */
+    .acz-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .acz-sidebar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .acz-sidebar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+
+    .acz-sidebar::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 
     /* 2. Brand Section - Increased Logo Size */
@@ -77,70 +119,114 @@
     .nav-link {
         display: flex;
         align-items: center;
-        padding: 12px 15px;
         font-size: 15px;
         font-weight: 600;
-        color: var(--acz-sidebar-primary);
-        background: transparent;
-        border-radius: 6px;
-        text-decoration: none;
+        color: #4154f1; /* Changed to match image blue */
         transition: 0.3s;
+        background: #f6f9ff;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
     }
 
     .nav-link i {
-        font-size: 20px;
-        margin-right: 12px;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #4154f1;
+    }
+
+    .nav-link.collapsed {
+        color: #012970;
+        background: #fff;
+    }
+
+    .nav-link.collapsed i {
         color: #899bbd;
-        transition: 0.3s;
     }
 
-    .nav-link:hover, .nav-link.active {
-        background: var(--acz-sidebar-hover);
-        color: var(--acz-sidebar-accent);
+    .nav-link:hover {
+        color: #4154f1;
+        background: #f6f9ff;
     }
 
-    .nav-link:hover i, .nav-link.active i {
-        color: var(--acz-sidebar-accent);
+    .nav-link:hover i {
+        color: #4154f1;
     }
 
-    /* 4. Submenu Styling */
+    .nav-link .bi-chevron-down {
+        margin-right: 0;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .nav-link:not(.collapsed) .bi-chevron-down {
+        transform: rotate(180deg);
+    }
+
     .nav-content {
-        list-style: none;
-        padding: 5px 0 5px 38px; 
+        padding: 5px 0 0 0;
         margin: 0;
+        list-style: none;
     }
 
     .nav-content a {
         display: flex;
         align-items: center;
-        padding: 10px 10px;
         font-size: 14px;
-        font-weight: 500;
-        color: var(--acz-sidebar-text);
-        text-decoration: none;
+        font-weight: 600;
+        color: #012970 !important; /* Force visibility */
         transition: 0.3s;
+        padding: 10px 0 10px 40px;
+        text-decoration: none;
     }
 
     .nav-content a i {
-        font-size: 8px; /* Bullet dot */
-        margin-right: 12px;
-        color: #bbbbbb;
+        font-size: 6px;
+        margin-right: 8px;
+        line-height: 0;
+        border-radius: 50%;
     }
 
-    .nav-content a:hover, .nav-content a.active {
-        color: var(--acz-sidebar-accent);
+    .nav-content a:hover,
+    .nav-content a.active {
+        color: #4154f1 !important; /* Force visibility on hover/active */
     }
 
     .nav-content a.active i {
-        color: var(--acz-sidebar-accent);
+        background-color: #4154f1;
     }
 
-    /* Chevron movement */
-    .acz-chevron { transition: transform 0.2s; font-size: 16px !important; }
-    .nav-link:not(.collapsed) .acz-chevron { transform: rotate(180deg); }
+    /* 4. Submenu Visibility Fixes */
+    /* Ensure submenu is visible and on top */
+    .nav-content {
+        position: relative !important;
+        z-index: 9999 !important;
+        background: transparent !important;
+    }
 
-    .logout-link:hover { color: #dc3545 !important; background: #fff5f5 !important; }
-    .logout-link:hover i { color: #dc3545 !important; }
+    /* Submenu items container */
+    .nav-content.collapse.show {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 10000 !important;
+        position: relative !important;
+        background: transparent !important;
+    }
+
+    /* Individual submenu links */
+    .nav-content a {
+        position: relative !important;
+        z-index: 10001 !important;
+        background: #fff !important; /* Or your desired background */
+    }
+
+    /* Ensure sidebar itself is on top */
+    .acz-sidebar {
+        z-index: 999 !important;
+        /* Fix for sidebar scroll - keep scroll but allow overflow */
+        overflow-y: auto !important;
+        overflow-x: hidden !important; /* Changed back to hidden to fix animation */
+    }
 </style>
 
 <aside id="sidebar" class="acz-sidebar">
@@ -172,11 +258,11 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="prof-registry-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    <li><a href="{{ url('/professionals-registry') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Overview</span></a></li>
-                    <li><a href="{{ url('/professionals') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Registered Professionals</span></a></li>
-                    <li><a href="{{ url('/firms') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Firms / Practices</span></a></li>
-                    <li><a href="{{ url('/registry-applications') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Applications</span></a></li>
-                    <li><a href="{{ url('/certificates-licenses') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Certificates & Licenses</span></a></li>
+                    <li><a href="{{ url('/professionals-registry') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Overview</span></a></li>
+                    <li><a href="{{ url('/professionals') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Registered Professionals</span></a></li>
+                    <li><a href="{{ url('/firms') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Firms / Practices</span></a></li>
+                    <li><a href="{{ url('/registry-applications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Applications</span></a></li>
+                    <li><a href="{{ url('/certificates-licenses') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Certificates & Licenses</span></a></li>
                 </ul>
             </li>
 
@@ -188,15 +274,15 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="comm-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    <li><a href="{{ url('/communications') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Communications</span></a></li>
-                    <li><a href="{{ url('/notifications') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Notifications</span></a></li>
-                    <li><a href="{{ url('/communication-templates') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Templates</span></a></li>
-                    <li><a href="{{ url('/communication-logs') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Delivery Logs</span></a></li>
+                    <li><a href="{{ url('/communications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Communications</span></a></li>
+                    <li><a href="{{ url('/notifications') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Notifications</span></a></li>
+                    <li><a href="{{ url('/communication-templates') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Templates</span></a></li>
+                    <li><a href="{{ url('/communication-logs') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Delivery Logs</span></a></li>
                 </ul>
             </li>
 
             {{-- User Management --}}
-            @canany(['user-list', 'role-list'])
+            {{-- Removed @can checks for DB Facade compatibility --}}
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#user-mgmt-nav" href="#">
                     <i class="ri-team-line"></i>
@@ -204,15 +290,11 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="user-mgmt-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    @can('user-list')
-                    <li><a href="{{ route('users.index') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Users</span></a></li>
-                    @endcan
-                    @can('role-list')
-                    <li><a href="{{ route('roles.index') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Roles & Permissions</span></a></li>
-                    @endcan
+                    <li><a href="{{ route('users.invite.create') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Invite User</span></a></li>
+                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>Users</span></a></li>
+                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>Roles & Permissions</span></a></li>
                 </ul>
             </li>
-            @endcanany
 
             <li class="nav-heading">Settings</li>
 
@@ -224,9 +306,9 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="settings-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    <li><a href="#"><i class="ri-checkbox-blank-circle-fill"></i><span>My Profile</span></a></li>
-                    <li><a href="#"><i class="ri-checkbox-blank-circle-fill"></i><span>General Settings</span></a></li>
-                    <li><a href="{{ url('/portal-settings/branding') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Branding & Appearance</span></a></li>
+                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>My Profile</span></a></li>
+                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>General Settings</span></a></li>
+                    <li><a href="{{ url('/portal-settings/branding') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Branding & Appearance</span></a></li>
                 </ul>
             </li>
 
@@ -246,8 +328,8 @@
                     <i class="ri-arrow-down-s-line ms-auto acz-chevron"></i>
                 </a>
                 <ul id="help-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    <li><a href="#"><i class="ri-checkbox-blank-circle-fill"></i><span>User Manual</span></a></li>
-                    <li><a href="{{ url('/help') }}"><i class="ri-checkbox-blank-circle-fill"></i><span>Support</span></a></li>
+                    <li><a href="#"><i class="ri-checkbox-blank-circle-line"></i><span>User Manual</span></a></li>
+                    <li><a href="{{ url('/help') }}"><i class="ri-checkbox-blank-circle-line"></i><span>Support</span></a></li>
                 </ul>
             </li>
 
@@ -264,33 +346,8 @@
     </nav>
 </aside>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Handle Accordion Toggling
-    $('.nav-link[data-bs-toggle="collapse"]').on('click', function(e) {
-        e.preventDefault();
-        
-        var targetId = $(this).attr('data-bs-target');
-        var $targetMenu = $(targetId);
-        var $allMenus = $('.nav-content');
-        var $allLinks = $('.nav-link[data-bs-toggle="collapse"]');
-
-        // If clicking a menu that is already open, just close it
-        if ($targetMenu.is(':visible')) {
-            $targetMenu.slideUp(300);
-            $(this).addClass('collapsed').attr('aria-expanded', 'false');
-        } 
-        // Otherwise, close all others and open this one
-        else {
-            $allMenus.slideUp(300);
-            $allLinks.addClass('collapsed').attr('aria-expanded', 'false');
-            
-            $targetMenu.slideDown(300);
-            $(this).removeClass('collapsed').attr('aria-expanded', 'true');
-        }
-    });
-
     // Auto-Highlight Active Page & Expand its Parent
     var currentUrl = window.location.href.split(/[?#]/)[0];
     $('.nav-content a, .nav-link').each(function() {
@@ -300,9 +357,8 @@ $(document).ready(function() {
             // If it's inside a sub-menu, expand that menu
             var $parentMenu = $(this).closest('.nav-content');
             if ($parentMenu.length) {
-                $parentMenu.show();
-                var triggerId = $parentMenu.attr('id');
-                $('.nav-link[data-bs-target="#' + triggerId + '"]').removeClass('collapsed').attr('aria-expanded', 'true');
+                $parentMenu.addClass('show');
+                $parentMenu.prev('.nav-link').removeClass('collapsed').attr('aria-expanded', 'true');
             }
         }
     });
