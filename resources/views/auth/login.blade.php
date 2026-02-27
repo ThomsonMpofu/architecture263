@@ -11,19 +11,16 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <style>
-        /* HP Simplified Font (self-hosted) */
         @font-face {
             font-family: "HP Simplified";
-            src: url("{{ asset('fonts/hp/HP-Simplified.woff2') }}") format("woff2"),
-                 url("{{ asset('fonts/hp/HP-Simplified.woff') }}") format("woff");
+            src: local("HP Simplified"), local("Segoe UI"), local("Arial");
             font-weight: 400;
             font-style: normal;
             font-display: swap;
         }
         @font-face {
             font-family: "HP Simplified";
-            src: url("{{ asset('fonts/hp/HP-Simplified-Bold.woff2') }}") format("woff2"),
-                 url("{{ asset('fonts/hp/HP-Simplified-Bold.woff') }}") format("woff");
+            src: local("HP Simplified"), local("Segoe UI"), local("Arial");
             font-weight: 700;
             font-style: normal;
             font-display: swap;
