@@ -156,13 +156,55 @@
                                         </small>
                                     </td>
                                     <td>
-                                        @if($user->status === 'Pending' || $user->status === 'Expired')
-                                            <button class="btn btn-sm btn-outline-primary resend-btn" data-id="{{ $user->id }}">
-                                                <i class="ri-refresh-line"></i> Resend
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
                                             </button>
-                                        @elseif($user->status === 'Active')
-                                            <span class="text-success"><i class="ri-check-double-line"></i> Verified</span>
-                                        @endif
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item edit-user-btn" href="#" 
+                                                       data-id="{{ $user->id }}" 
+                                                       data-first-name="{{ $user->first_name }}" 
+                                                       data-middle-name="{{ $user->middle_name }}" 
+                                                       data-last-name="{{ $user->last_name }}" 
+                                                       data-username="{{ $user->username }}" 
+                                                       data-email="{{ $user->email }}">
+                                                        <i class="ri-pencil-line me-2"></i> Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item toggle-suspend-btn" href="#" data-id="{{ $user->id }}">
+                                                        @if($user->is_suspended)
+                                                            <span class="text-success"><i class="ri-check-line me-2"></i> Activate</span>
+                                                        @else
+                                                            <span class="text-danger"><i class="ri-prohibited-line me-2"></i> Suspend</span>
+                                                        @endif
+                                                    </a>
+                                                </li>
+                                                @if($user->status === 'Pending')
+                                                    <li>
+                                                        <a class="dropdown-item expire-link-btn text-warning" href="#" data-id="{{ $user->id }}">
+                                                            <i class="ri-time-line me-2"></i> Expire Link
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if($user->status === 'Expired' || $user->is_suspended)
+                                                    <li>
+                                                        <a class="dropdown-item reactivate-link-btn text-primary" href="#" data-id="{{ $user->id }}">
+                                                            <i class="ri-mail-send-line me-2"></i> Reactivate Link
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if(($user->status === 'Pending' || $user->status === 'Expired') && !$user->is_suspended)
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item resend-btn text-primary" href="#" data-id="{{ $user->id }}">
+                                                            <i class="ri-send-plane-fill me-2"></i> Resend Invite
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            </ul>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -171,6 +213,49 @@
                     </div>
 
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Edit User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="edit_user_id">
+                    <div class="mb-3">
+                        <label for="edit_first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="edit_first_name" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_middle_name" class="form-label">Middle Name</label>
+                        <input type="text" class="form-control" id="edit_middle_name" name="middle_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="edit_last_name" name="last_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="edit_username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary-custom" id="updateUserBtn">Update User</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -311,13 +396,153 @@
         });
     });
 
-    // Resend Invitation Logic
-    document.querySelectorAll('.resend-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-id');
-            const originalText = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+    // Event Delegation for Dynamic Elements
+    document.addEventListener('click', function(e) {
+        
+        // Edit User
+        if (e.target.closest('.edit-user-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.edit-user-btn');
+            const id = btn.getAttribute('data-id');
+            const firstName = btn.getAttribute('data-first-name');
+            const middleName = btn.getAttribute('data-middle-name');
+            const lastName = btn.getAttribute('data-last-name');
+            const username = btn.getAttribute('data-username');
+            const email = btn.getAttribute('data-email');
+
+            document.getElementById('edit_user_id').value = id;
+            document.getElementById('edit_first_name').value = firstName;
+            document.getElementById('edit_middle_name').value = middleName;
+            document.getElementById('edit_last_name').value = lastName;
+            document.getElementById('edit_username').value = username;
+            document.getElementById('edit_email').value = email;
+
+            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+        }
+
+        // Toggle Suspend
+        if (e.target.closest('.toggle-suspend-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.toggle-suspend-btn');
+            const id = btn.getAttribute('data-id');
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to change the suspension status of this user.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#012970',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/${id}/toggle-suspend`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            Toast.fire({ icon: 'success', title: data.message });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Toast.fire({ icon: 'error', title: data.error || 'Action failed.' });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Expire Link
+        if (e.target.closest('.expire-link-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.expire-link-btn');
+            const id = btn.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Expire Invitation?',
+                text: "This will invalidate the current invitation link.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f0ad4e',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, expire it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/${id}/expire-link`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            Toast.fire({ icon: 'success', title: data.message });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Toast.fire({ icon: 'error', title: data.error || 'Action failed.' });
+                        }
+                    });
+                }
+            });
+        }
+
+        if (e.target.closest('.reactivate-link-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.reactivate-link-btn');
+            const id = btn.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Reactivate link?',
+                text: "This will generate a new link and send an email to the user to set a password.",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#012970',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, send email'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/${id}/reactivate-link`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                    .then(result => {
+                        if (result.status === 200) {
+                            Toast.fire({ icon: 'success', title: result.body.message });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Toast.fire({ icon: 'error', title: result.body.message || result.body.error || 'Action failed.' });
+                        }
+                    })
+                    .catch(() => {
+                        Toast.fire({ icon: 'error', title: 'An unexpected error occurred.' });
+                    });
+                }
+            });
+        }
+
+        // Resend Invite
+        if (e.target.closest('.resend-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.resend-btn');
+            const userId = btn.getAttribute('data-id');
+            const originalText = btn.innerHTML;
+            
+            // Disable logic for anchor tag
+            btn.style.pointerEvents = 'none';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
 
             fetch(`/users/resend/${userId}`, {
                 method: 'POST',
@@ -329,27 +554,73 @@
             .then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(result => {
                 if (result.status === 200) {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Invitation resent successfully!'
-                    });
+                    Toast.fire({ icon: 'success', title: 'Invitation resent successfully!' });
                 } else {
-                    Toast.fire({
-                        icon: 'error',
-                        title: result.body.message || result.body.error
-                    });
+                    Toast.fire({ icon: 'error', title: result.body.message || result.body.error });
                 }
             })
             .catch(error => {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'An unexpected error occurred.'
-                });
+                Toast.fire({ icon: 'error', title: 'An unexpected error occurred.' });
             })
             .finally(() => {
-                this.disabled = false;
-                this.innerHTML = originalText;
+                btn.style.pointerEvents = 'auto';
+                btn.innerHTML = originalText;
             });
+        }
+    });
+
+    // Handle Edit Form Submit
+    document.getElementById('editUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit_user_id').value;
+        const formData = new FormData(this);
+        formData.append('_method', 'PUT'); 
+
+        const btn = document.getElementById('updateUserBtn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+
+        fetch(`/users/${id}`, { 
+            method: 'POST', 
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(result => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            if (result.status === 200) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                modal.hide();
+                Toast.fire({ icon: 'success', title: result.body.message });
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                let errorMsg = result.body.message || 'Failed to update user.';
+                if (result.body.errors) {
+                        let errorList = '<ul style="text-align: left;">';
+                        for (const [key, messages] of Object.entries(result.body.errors)) {
+                            messages.forEach(msg => errorList += `<li>${msg}</li>`);
+                        }
+                        errorList += '</ul>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            html: errorList,
+                            confirmButtonColor: '#012970'
+                        });
+                } else {
+                    Swal.fire('Error', errorMsg, 'error');
+                }
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            Swal.fire('Error', 'An unexpected error occurred.', 'error');
         });
     });
 </script>
