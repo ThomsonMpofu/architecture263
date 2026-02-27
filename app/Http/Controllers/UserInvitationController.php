@@ -138,7 +138,7 @@ class UserInvitationController extends Controller
         try {
             // 4. Insert User (Inactive state via unknown password)
             // Using DB Facade as requested (NO Eloquent)
-            DB::table('users')->insert([
+            $userId = DB::table('users')->insertGetId([
                 'name' => $fullName,
                 'first_name' => $validated['first_name'],
                 'middle_name' => $validated['middle_name'],
@@ -148,6 +148,31 @@ class UserInvitationController extends Controller
                 'password' => $dummyPassword,
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+
+            $guardName = config('auth.defaults.guard', 'web');
+            $tableNames = config('permission.table_names');
+            $rolesTable = $tableNames['roles'] ?? 'roles';
+            $modelHasRolesTable = $tableNames['model_has_roles'] ?? 'model_has_roles';
+
+            $defaultRoleId = DB::table($rolesTable)
+                ->where('name', 'user')
+                ->where('guard_name', $guardName)
+                ->value('id');
+
+            if (! $defaultRoleId) {
+                $defaultRoleId = DB::table($rolesTable)->insertGetId([
+                    'name' => 'user',
+                    'guard_name' => $guardName,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::table($modelHasRolesTable)->insert([
+                'role_id' => $defaultRoleId,
+                'model_type' => \App\Models\User::class,
+                'model_id' => $userId,
             ]);
 
             // 5. Create Invitation Token
