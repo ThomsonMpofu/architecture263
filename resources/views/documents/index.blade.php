@@ -95,6 +95,8 @@
 <!-- Upload Modal -->
  @include('documents.create')
 
+ <!-- Delete Modal -->
+@include('documents.delete')
 <style>
  .modal-content {
     border-radius: 15px;

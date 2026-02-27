@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
 
+
+Route::get('/document',[DocumentController::class,'index'])->name('documents.index');
+Route::resource('documents', DocumentController::class);
+Route::get('/document/download/{id}',[DocumentController::class,'download'])->name('documents.download');
+
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -20,8 +26,8 @@ Route::get('/dashboard', function () {
     return view('dashboard.index');
 })->middleware('auth')->name('dashboard.index');
 
-Route::get('/document',[DocumentController::class,'index'])->name('documents.index');
-Route::post('/document/post',[DocumentController::class,'store'])->name('documents.store');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

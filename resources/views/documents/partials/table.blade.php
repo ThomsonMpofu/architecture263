@@ -27,15 +27,15 @@
                                         </div>
                                     </td>                                    
                                     <td class="px-4 py-3 align-middle text-center">                                       
-                                            <a href="#" 
+                                            <a href="{{ route('documents.show', $document->id) }}" 
                                             class="btn btn-outline-primary btn-sm">
                                                 <i class="fas fa-download me-1"></i>View
                                             </a>
-                                            <a href="#" 
+                                            <a href="{{ route('documents.download', $document->id) }}" 
                                                 class="btn btn-outline-secondary btn-sm">
                                                 Download
                                             </a>
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#DeleteMinutesModal" 
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#DeleteDocumentsModal" 
                                             class="btn btn-outline-danger btn-sm"
                                             data-id="{{ $document->id }}"
                                             data-title="{{ $document->file_name}}">
