@@ -318,13 +318,13 @@
                 @csrf
 
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username or Email</label>
+                    <label for="username" class="form-label">Username</label>
                     <input
                         type="text"
                         id="username"
                         name="username"
                         class="form-control @error('username') is-invalid @enderror"
-                        placeholder="Enter your username or email"
+                        placeholder="Enter your username"
                         value="{{ old('username') }}"
                         required
                         autofocus

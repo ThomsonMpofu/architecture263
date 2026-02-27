@@ -1,36 +1,11 @@
 <!-- ======= Header ======= -->
 @php
-    use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Auth;
 
     $notifications = collect();
     $unreadCount = 0;
-    $userProfile = null;
-
-    if (auth()->check()) {
-        $notifications = DB::table('notifications')
-            ->where('notifiable_id', auth()->id())
-            ->whereNull('read_at')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $unreadCount = $notifications->count();
-
-        $userProfile = DB::table('users')
-            ->leftJoin('basic_informations', 'users.id', '=', 'basic_informations.user_id')
-            ->leftJoin('staff', 'basic_informations.employee_no', '=', 'staff.employee_no')
-            ->leftJoin('department_positions', 'staff.position_id', '=', 'department_positions.id')
-            ->where('users.id', Auth::id())
-            ->selectRaw("
-                CONCAT(
-                    COALESCE(basic_informations.first_name, ''), 
-                    CASE WHEN basic_informations.first_name IS NOT NULL AND basic_informations.surname IS NOT NULL THEN ' ' ELSE '' END,
-                    COALESCE(basic_informations.surname, '')
-                ) as full_name,
-                department_positions.job_title as job_title
-            ")
-            ->first();
-    }
+    // Use Auth user or a default object
+    $userProfile = Auth::user(); 
 @endphp
 
 <style>
@@ -71,8 +46,8 @@
     #header .brand-logo {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        clip-path: circle(48% at 50% 50%);
+        object-fit: contain; /* Ensure logo fits nicely */
+        /* Remove clip-path which might cut off parts */
         transform: scale(1.04);
         display: block;
     }
@@ -344,11 +319,11 @@
             {{-- Profile --}}
             <li class="nav-item dropdown pe-2 pe-md-3">
                 <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                    <img src="{{ asset('img/default user.png') }}" alt="Profile" class="rounded-circle">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->username ?? 'User') }}&background=0D8ABC&color=fff" alt="Profile" class="rounded-circle">
 
                     @auth
                         <span class="d-none d-md-block dropdown-toggle ps-2">
-                            {{ trim($userProfile->full_name ?? '') ?: (Auth::user()->username ?? 'User') }}
+                            {{ $userProfile->name ?? (Auth::user()->username ?? 'User') }}
                         </span>
                     @else
                         <script>window.location.href = '{{ route('login') }}';</script>
@@ -359,10 +334,10 @@
                     <li class="dropdown-header">
                         @auth
                             <h6 class="fw-semibold mb-1" style="font-size:.85rem;">
-                                {{ trim($userProfile->full_name ?? '') ?: (Auth::user()->username ?? 'User') }}
+                                {{ $userProfile->name ?? (Auth::user()->username ?? 'User') }}
                             </h6>
                             <span class="text-muted" style="font-size:.75rem;">
-                                {{ $userProfile->job_title ?? 'No job title' }}
+                                {{ $userProfile->job_title ?? 'Member' }}
                             </span>
                         @else
                             <script>window.location.href = '{{ route('login') }}';</script>
@@ -372,14 +347,14 @@
                     <li><hr class="dropdown-divider"></li>
 
                     <li>
-                        <a class="dropdown-item" href="{{ route('profile.index') }}">
+                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
                             <i class="ri-user-3-line"></i>
                             <span>My Profile</span>
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item" href="{{ route('change-password.index') }}">
+                        <a class="dropdown-item" href="#">
                             <i class="ri-lock-password-line"></i>
                             <span>Change Password</span>
                         </a>
