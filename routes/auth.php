@@ -7,7 +7,6 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 
 // ✅ add these:
@@ -17,10 +16,11 @@ use App\Http\Controllers\Auth\OtpLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    // This admin backend has no self-registration. Architects, council
+    // reviewers, and clients register through the public portal instead;
+    // admin/staff accounts are created via invitation (see UserInvitationController).
+    Route::get('register', fn () => redirect(config('app.portal_url')))
         ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

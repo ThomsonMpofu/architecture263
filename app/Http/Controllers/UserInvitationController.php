@@ -3,15 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Mail\UserInvitation;
+use App\Models\User;
+use App\Support\ArchitectSpecialties;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UserInvitationController extends Controller
 {
+    /**
+     * Roles an admin can invite someone as. "client" is excluded — clients
+     * self-register through the portal, not the admin invite flow.
+     */
+    private const INVITABLE_ROLES = ['user', 'architect', 'council', 'admin'];
+
+
     /**
      * Show the invitation form and list of users.
      */
@@ -83,6 +93,8 @@ class UserInvitationController extends Controller
 
         return view('users.invite', [
             'users' => $processedUsers,
+            'specialties' => ArchitectSpecialties::OPTIONS,
+            'firms' => User::role('architect')->whereNotNull('firm_name')->distinct()->orderBy('firm_name')->pluck('firm_name'),
             'filters' => [
                 'search' => $request->search,
                 'status' => $request->status,
@@ -102,6 +114,9 @@ class UserInvitationController extends Controller
             'last_name' => 'required|string|max:255',
             'username' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
+            'role' => ['required', 'string', Rule::in(self::INVITABLE_ROLES)],
+            'specialty' => ['nullable', Rule::in(ArchitectSpecialties::OPTIONS)],
+            'firm_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         // 2. Handle Username Uniqueness & Fallback (name.surname -> surname.name)
@@ -140,7 +155,7 @@ class UserInvitationController extends Controller
         // 3. Generate Data
         $token = Str::random(64);
         $dummyPassword = Hash::make(Str::random(40)); // Secure random password user doesn't know
-        $fullName = trim($validated['first_name'].' '.($validated['middle_name'] ? $validated['middle_name'].' ' : '').$validated['last_name']);
+        $fullName = trim($validated['first_name'].' '.(($validated['middle_name'] ?? null) ? $validated['middle_name'].' ' : '').$validated['last_name']);
 
         DB::beginTransaction();
 
@@ -150,11 +165,13 @@ class UserInvitationController extends Controller
             $userId = DB::table('users')->insertGetId([
                 'name' => $fullName,
                 'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
                 'last_name' => $validated['last_name'],
                 'username' => $username,
                 'email' => $validated['email'],
                 'password' => $dummyPassword,
+                'specialty' => $validated['specialty'] ?? null,
+                'firm_name' => $validated['firm_name'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -164,14 +181,14 @@ class UserInvitationController extends Controller
             $rolesTable = $tableNames['roles'] ?? 'roles';
             $modelHasRolesTable = $tableNames['model_has_roles'] ?? 'model_has_roles';
 
-            $defaultRoleId = DB::table($rolesTable)
-                ->where('name', 'user')
+            $roleId = DB::table($rolesTable)
+                ->where('name', $validated['role'])
                 ->where('guard_name', $guardName)
                 ->value('id');
 
-            if (! $defaultRoleId) {
-                $defaultRoleId = DB::table($rolesTable)->insertGetId([
-                    'name' => 'user',
+            if (! $roleId) {
+                $roleId = DB::table($rolesTable)->insertGetId([
+                    'name' => $validated['role'],
                     'guard_name' => $guardName,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -179,7 +196,7 @@ class UserInvitationController extends Controller
             }
 
             DB::table($modelHasRolesTable)->insert([
-                'role_id' => $defaultRoleId,
+                'role_id' => $roleId,
                 'model_type' => \App\Models\User::class,
                 'model_id' => $userId,
             ]);
@@ -272,13 +289,13 @@ class UserInvitationController extends Controller
             'email' => 'required|email|max:255|unique:users,email,'.$id,
         ]);
 
-        $fullName = trim($validated['first_name'].' '.($validated['middle_name'] ? $validated['middle_name'].' ' : '').$validated['last_name']);
+        $fullName = trim($validated['first_name'].' '.(($validated['middle_name'] ?? null) ? $validated['middle_name'].' ' : '').$validated['last_name']);
 
         try {
             DB::table('users')->where('id', $id)->update([
                 'name' => $fullName,
                 'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
                 'last_name' => $validated['last_name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
