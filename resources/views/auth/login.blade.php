@@ -309,8 +309,8 @@
                 </div>
             @endif
 
-            <h1 class="signin-title">Sign in</h1>
-            <p class="signin-text">Enter your credentials to access the portal.</p>
+            <h1 class="signin-title">Admin Sign In</h1>
+            <p class="signin-text">This sign-in is for ACZ admin staff only. Architects, council reviewers, and clients should use the <a href="{{ config('app.portal_url') }}" class="small-link">public portal</a>.</p>
 
             <form method="POST" action="{{ route('login') }}" id="loginForm">
                 @csrf
@@ -389,12 +389,11 @@
                 </a>
             </form>
 
-            @if (Route::has('register'))
-                <p class="text-center mt-4 mb-0 small text-muted">
-                    New to the council?
-                    <a href="{{ route('register') }}" class="small-link">Create an account</a>
-                </p>
-            @endif
+            <p class="text-center mt-4 mb-0 small text-muted">
+                Not an admin? Head to the
+                <a href="{{ config('app.portal_url') }}" class="small-link">public portal</a>
+                to sign in as an architect, council reviewer, or client.
+            </p>
         </div>
     </div>
 </div>

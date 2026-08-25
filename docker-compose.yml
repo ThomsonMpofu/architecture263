@@ -15,6 +15,7 @@ services:
             - laravel
         depends_on:
             - db
+            - clamav
         environment:
             APP_NAME: ${APP_NAME}
             APP_ENV: ${APP_ENV}
@@ -27,6 +28,9 @@ services:
             DB_DATABASE: ${DB_DATABASE}
             DB_USERNAME: ${DB_USERNAME}
             DB_PASSWORD: ${DB_PASSWORD}
+            CLAMAV_ENABLED: ${CLAMAV_ENABLED}
+            CLAMAV_HOST: clamav
+            CLAMAV_PORT: 3310
         ports:
             - "5173:5173"
 
@@ -60,6 +64,27 @@ services:
         networks:
             - laravel
 
+    # Malware scanning daemon (docs.clamav.net) used to scan plan-application
+    # drawings before they're accepted — see App\Support\ClamAvScanner. Not
+    # published to the host: only the app container needs to reach it, over
+    # the internal "laravel" network at clamav:3310. First boot is slow
+    # (freshclam downloads the virus database, a few hundred MB) — the
+    # healthcheck keeps the app from depending on it before it's ready.
+    clamav:
+        image: clamav/clamav:stable
+        container_name: laravel-clamav
+        restart: unless-stopped
+        volumes:
+            - clamavdb:/var/lib/clamav
+        networks:
+            - laravel
+        healthcheck:
+            test: ["CMD", "clamdcheck.sh"]
+            interval: 30s
+            timeout: 10s
+            retries: 10
+            start_period: 180s
+
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: laravel-phpmyadmin
@@ -85,4 +110,6 @@ volumes:
     vendor:
         driver: local
     node_modules:
+        driver: local
+    clamavdb:
         driver: local

@@ -56,6 +56,9 @@ class AdminUserSeeder extends Seeder
         $role->syncPermissions($permissionModels);
 
         Role::firstOrCreate(['name' => 'user', 'guard_name' => $guardName]);
+        Role::firstOrCreate(['name' => 'client', 'guard_name' => $guardName]);
+        Role::firstOrCreate(['name' => 'architect', 'guard_name' => $guardName]);
+        Role::firstOrCreate(['name' => 'council', 'guard_name' => $guardName]);
 
         // Create Admin User
         $user = User::firstOrCreate(

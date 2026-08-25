@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Public Portal URL
+    |--------------------------------------------------------------------------
+    |
+    | This admin backend is for staff/admin use only. Architects, council
+    | reviewers, and clients authenticate through the public portal instead.
+    |
+    */
+
+    'portal_url' => env('PORTAL_URL', 'http://127.0.0.1:8001'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

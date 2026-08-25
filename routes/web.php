@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Http\Controllers\UserActivationController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ProfessionalController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -68,6 +69,14 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::post('/users/{id}/toggle-suspend', [UserInvitationController::class, 'toggleSuspend'])->name('users.toggle-suspend');
     Route::post('/users/{id}/expire-link', [UserInvitationController::class, 'expireLink'])->name('users.expire-link');
     Route::post('/users/{id}/reactivate-link', [UserInvitationController::class, 'reactivateLink'])->name('users.reactivate-link');
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/professionals', [ProfessionalController::class, 'index'])->name('professionals.index');
+        Route::get('/professionals/{id}', [ProfessionalController::class, 'show'])->name('professionals.show');
+        Route::post('/professionals/{id}/approve', [ProfessionalController::class, 'approve'])->name('professionals.approve');
+        Route::post('/professionals/{id}/blue-book/approve', [ProfessionalController::class, 'approveBlueBook'])->name('professionals.approve-blue-book');
+        Route::post('/professionals/{id}/details', [ProfessionalController::class, 'updateDetails'])->name('professionals.update-details');
+    });
 });
 
 // Route::post('login', [AuthenticatedSessionController::class, 'store']);

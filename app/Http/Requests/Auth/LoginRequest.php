@@ -44,6 +44,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! Auth::user()->hasRole('admin')) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'username' => 'This is the admin sign-in. Please use the public portal at '.config('app.portal_url').' to log in.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
