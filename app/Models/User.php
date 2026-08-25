@@ -23,6 +23,7 @@ class User extends Authenticatable
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
